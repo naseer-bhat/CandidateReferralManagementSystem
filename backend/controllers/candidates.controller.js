@@ -1,4 +1,3 @@
-
 import User from "../models/user.model.js";
 
 export const addNewCandidate = async (req, res) => {
@@ -68,5 +67,26 @@ export const deleteCandidate = async (req, res) => {
     return res
       .status(500)
       .json({ error: error.message, msg: "internal server error" });
+  }
+};
+export const search = async (req, res) => {
+  try {
+    const { jobTitle, status } = req.query;
+    const query = [];
+    if (jobTitle) query.push({ jobTitle });
+    if (status) query.push({ status });
+
+    if (query.length === 0) {
+      return res
+        .status(400)
+        .json({ msg: "Please provide jobTitle or status to search" });
+    }
+    const searchedCandidate = await User.find({ $or: query });
+    if (!searchedCandidate.length === 0) {
+      return res.status(404).json({ msg: "no search found" });
+    }
+    return res.status(200).json({ searchedCandidate });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 };
